@@ -1,4 +1,4 @@
-/* ImageLab tool: Convert (PNG/JPEG/WebP, batch, ZIP) */
+/* Bimba tool: Convert (PNG/JPEG/WebP, batch, ZIP) */
 (function (IL) {
   IL.register('convert', function (root) {
     let files = [];
@@ -35,9 +35,9 @@
           results.push({ name: IL.rename(files[i].name, ext), blob });
         }
         if (results.length === 1) out.appendChild(IL.download(results[0].blob, results[0].name));
-        else { const zip = await IL.zip(results); out.appendChild(IL.download(zip, 'imagelab-converted.zip')); }
+        else { const zip = await IL.zip(results); out.appendChild(IL.download(zip, 'bimba-converted.zip')); }
         log.set('Done — ' + results.length + ' image' + (results.length > 1 ? 's' : '') + '.', 'ok');
       } catch (e) { log.set('Failed: ' + e.message, 'err'); }
     };
   });
-})(window.ImageLab);
+})(window.Bimba);

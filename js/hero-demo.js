@@ -1,5 +1,5 @@
-/* ImageLab — hero demo: live before/after canvas wipe.
-   Page-specific (not a tool). Reads ImageLab.SAMPLE, processes with the
+/* Bimba — hero demo: live before/after canvas wipe.
+   Page-specific (not a tool). Reads Bimba.SAMPLE, processes with the
    same Canvas API the tools use, and lets the user drag to compare. */
 (function (IL) {
   const cv = document.getElementById('demoCv');
@@ -54,4 +54,4 @@
   window.addEventListener('mousemove', e => { if (drag) setSplit(e.clientX); });
   frame.addEventListener('click', e => { if (e.target !== handle && !handle.contains(e.target)) setSplit(e.clientX); });
   handle.addEventListener('touchmove', e => { setSplit(e.touches[0].clientX); e.preventDefault(); }, { passive: false });
-})(window.ImageLab);
+})(window.Bimba);

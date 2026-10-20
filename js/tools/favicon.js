@@ -1,4 +1,4 @@
-/* ImageLab tool: Favicon set (multi-size + ZIP) */
+/* Bimba tool: Favicon set (multi-size + ZIP) */
 (function (IL) {
   IL.register('favicon', function (root) {
     let file = null;
@@ -35,9 +35,9 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">`;
         entries.push({ name: 'snippet.html', blob: new Blob([snippet], { type: 'text/html' }) });
         const zip = await IL.zip(entries);
-        out.appendChild(IL.download(zip, 'imagelab-favicons.zip'));
+        out.appendChild(IL.download(zip, 'bimba-favicons.zip'));
         log.set('Done — ' + SIZES.length + ' sizes + HTML snippet.', 'ok');
       } catch (e) { log.set('Failed: ' + e.message, 'err'); }
     };
   });
-})(window.ImageLab);
+})(window.Bimba);

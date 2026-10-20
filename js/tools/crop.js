@@ -1,4 +1,4 @@
-/* ImageLab tool: Crop (drag region or fixed ratio) */
+/* Bimba tool: Crop (drag region or fixed ratio) */
 (function (IL) {
   IL.register('crop', function (root) {
     let file = null, img = null, scale = 1;
@@ -74,4 +74,4 @@
       } catch (e) { log.set('Failed: ' + e.message, 'err'); }
     };
   });
-})(window.ImageLab);
+})(window.Bimba);

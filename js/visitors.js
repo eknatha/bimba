@@ -1,65 +1,74 @@
-/* ImageLab — visitor counter.
-   Total via counterapi.dev (free, CORS, no signup) + localStorage cache.
-   Today via localStorage (once per calendar day per browser). */
+/* Bimba — visitor counter.
+   TOTAL: global count from counterapi.dev **v2** (v1 was shut down on 7 Aug 2026). It is incremented once per browser tab-session
+          and cached in localStorage so the last known number still shows if the service is unreachable.
+   TODAY: "visits from this browser today" — a local counter, NOT a global figure (there is no server to ask).
+   Only a number is exchanged; no image data ever reaches this file. All storage access is guarded
+   (private windows / blocked storage must never break the page). */
 (function () {
-  function fmt(n) {
-    if (n == null || isNaN(n)) return '—';
-    return Number(n).toLocaleString();
+  // NOTE: KEY is a data identifier, not branding — it must stay 'imagelab-total' or the existing global count resets to 0.
+  const NS = 'eknathalabs', KEY = 'imagelab-total';
+  const API = 'https://api.counterapi.dev/v2/' + NS + '/' + KEY;   // v2 base; '/up' increments, no suffix reads
+
+  const ls = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+  const ss = {
+    get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
+  };
+  // The v2 response body is not formally documented, so accept every shape it is known/likely to use:
+  // {count}, {value}, {hits}, {data:{value|count|up_count[,down_count]}}  (up_count − down_count when both exist)
+  const num = v => (typeof v === 'number' && isFinite(v)) ? v : (typeof v === 'string' && v.trim() !== '' && isFinite(+v)) ? +v : null;
+  function readCount(d) {
+    if (!d || typeof d !== 'object') return null;
+    const x = (d.data && typeof d.data === 'object') ? d.data : d;
+    for (const o of [x, d]) {
+      for (const k of ['value', 'count', 'hits']) { const v = num(o[k]); if (v != null) return v; }
+      const up = num(o.up_count); if (up != null) return up - (num(o.down_count) || 0);
+    }
+    return null;
   }
-  function setCount(id, val) {
+  const fmt = n => (n == null || isNaN(n)) ? '—' : Number(n).toLocaleString();
+  function put(id, text) {
     const el = document.getElementById(id);
     if (!el) return;
-    el.textContent = fmt(val);
-    el.classList.remove('loading');
-  }
-  function setToday(val) {
-    const el = document.getElementById('todayCount');
-    if (!el) return;
-    el.textContent = '+' + fmt(val) + ' today';
+    el.textContent = text;
     el.classList.remove('loading');
   }
 
-  // ── TODAY count ──────────────────────────────────────────────
-  const todayStr  = new Date().toISOString().slice(0, 10);
-  const seenToday = localStorage.getItem('il-seen-date') === todayStr;
-  const seenSess  = sessionStorage.getItem('il-counted') === '1';
-
-  if (!seenToday && !seenSess) {
-    const prev = parseInt(localStorage.getItem('il-today-count') || '0');
-    const next = prev + 1;
-    localStorage.setItem('il-today-count', next);
-    localStorage.setItem('il-seen-date', todayStr);
-    sessionStorage.setItem('il-counted', '1');
-    setToday(next);
-  } else {
-    const current = parseInt(localStorage.getItem('il-today-count') || '1');
-    setToday(current);
+  // ── TODAY (this browser, local calendar day) ──
+  const day = new Date();
+  const todayStr = day.getFullYear() + '-' + String(day.getMonth() + 1).padStart(2, '0') + '-' + String(day.getDate()).padStart(2, '0');
+  let count = parseInt(ls.get('il-today-count') || '0', 10) || 0;
+  if (ls.get('il-seen-date') !== todayStr) {          // new day (or first ever visit) → start again from zero
+    count = 0;
+    ls.set('il-seen-date', todayStr);
   }
-
-  const lastDate = localStorage.getItem('il-seen-date');
-  if (lastDate && lastDate !== todayStr) {
-    localStorage.removeItem('il-seen-date');
-    localStorage.setItem('il-today-count', '0');
+  if (ss.get('il-counted') !== '1') {                 // one count per tab session
+    count += 1;
+    ss.set('il-counted', '1');
   }
+  ls.set('il-today-count', String(count));
+  put('todayCount', '+' + fmt(count) + ' today');
 
-  // ── TOTAL count — counterapi.dev (once per session) ──
-  const API = 'https://api.counterapi.dev/v1/eknathalabs/imagelab-total/up';
-  const hitAPI = sessionStorage.getItem('il-total-hit') !== '1';
-  const endpoint = hitAPI ? API
-    : 'https://api.counterapi.dev/v1/eknathalabs/imagelab-total';
+  // ── TOTAL (global, counterapi.dev) ──
+  const hit = ss.get('il-total-hit') !== '1';         // increment once per session, otherwise just read
+  const cached = ls.get('il-total-cache');
+  if (cached) put('totalCount', fmt(Number(cached)));
 
-  fetch(endpoint)
-    .then(r => r.json())
+  const ctl = typeof AbortController === 'function' ? new AbortController() : null;
+  const timer = ctl ? setTimeout(() => ctl.abort(), 8000) : null;
+
+  fetch(hit ? API + '/up' : API, ctl ? { signal: ctl.signal } : undefined)
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(d => {
-      const val = d.count || d.value || d.hits;
-      if (val != null) {
-        if (hitAPI) sessionStorage.setItem('il-total-hit', '1');
-        setCount('totalCount', val);
-        localStorage.setItem('il-total-cache', val);
-      } else throw new Error('no count field');
+      const val = readCount(d);
+      if (val == null) throw new Error('no count field');
+      if (hit) ss.set('il-total-hit', '1');
+      ls.set('il-total-cache', String(val));
+      put('totalCount', fmt(val));
     })
-    .catch(() => {
-      const cached = localStorage.getItem('il-total-cache');
-      setCount('totalCount', cached ? Number(cached).toLocaleString() : '—');
-    });
+    .catch(() => put('totalCount', cached ? fmt(Number(cached)) : '—'))
+    .then(() => { if (timer) clearTimeout(timer); });
 })();

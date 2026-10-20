@@ -1,4 +1,4 @@
-/* ImageLab tool: Resize (px, percent, fit) */
+/* Bimba tool: Resize (px, percent, fit) */
 (function (IL) {
   IL.register('resize', function (root) {
     let files = [], firstDim = null;
@@ -67,9 +67,9 @@
           results.push({ name: IL.rename(files[i].name, IL.EXT[mime] || 'png'), blob });
         }
         if (results.length === 1) out.appendChild(IL.download(results[0].blob, results[0].name));
-        else { const zip = await IL.zip(results); out.appendChild(IL.download(zip, 'imagelab-resized.zip')); }
+        else { const zip = await IL.zip(results); out.appendChild(IL.download(zip, 'bimba-resized.zip')); }
         log.set('Done — ' + results.length + ' image' + (results.length > 1 ? 's' : '') + '.', 'ok');
       } catch (e) { log.set('Failed: ' + e.message, 'err'); }
     };
   });
-})(window.ImageLab);
+})(window.Bimba);

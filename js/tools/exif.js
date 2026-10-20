@@ -1,4 +1,4 @@
-/* ImageLab tool: Strip EXIF (re-encode via canvas drops all metadata) */
+/* Bimba tool: Strip EXIF (re-encode via canvas drops all metadata) */
 (function (IL) {
   IL.register('exif', function (root) {
     let files = [];
@@ -36,9 +36,9 @@
           results.push({ name: IL.rename(files[i].name, IL.EXT[mime] || 'png').replace(/(\.\w+)$/, '-clean$1'), blob });
         }
         if (results.length === 1) out.appendChild(IL.download(results[0].blob, results[0].name));
-        else { const zip = await IL.zip(results); out.appendChild(IL.download(zip, 'imagelab-clean.zip')); }
+        else { const zip = await IL.zip(results); out.appendChild(IL.download(zip, 'bimba-clean.zip')); }
         log.set('Done — metadata stripped from ' + results.length + ' image' + (results.length > 1 ? 's' : '') + '.', 'ok');
       } catch (e) { log.set('Failed: ' + e.message, 'err'); }
     };
   });
-})(window.ImageLab);
+})(window.Bimba);

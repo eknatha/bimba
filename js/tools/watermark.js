@@ -1,4 +1,4 @@
-/* ImageLab tool: Watermark (text overlay, single or batch) */
+/* Bimba tool: Watermark (text overlay, single or batch) */
 (function (IL) {
   IL.register('watermark', function (root) {
     let files = [];
@@ -60,9 +60,9 @@
           results.push({ name: IL.rename(files[i].name, IL.EXT[mime] || 'png').replace(/(\.\w+)$/, '-wm$1'), blob });
         }
         if (results.length === 1) out.appendChild(IL.download(results[0].blob, results[0].name));
-        else { const zip = await IL.zip(results); out.appendChild(IL.download(zip, 'imagelab-watermarked.zip')); }
+        else { const zip = await IL.zip(results); out.appendChild(IL.download(zip, 'bimba-watermarked.zip')); }
         log.set('Done — ' + results.length + ' image' + (results.length > 1 ? 's' : '') + '.', 'ok');
       } catch (e) { log.set('Failed: ' + e.message, 'err'); }
     };
   });
-})(window.ImageLab);
+})(window.Bimba);

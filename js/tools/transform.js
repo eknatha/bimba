@@ -1,4 +1,4 @@
-/* ImageLab tool: Rotate & flip */
+/* Bimba tool: Rotate & flip */
 (function (IL) {
   IL.register('transform', function (root) {
     let files = [];
@@ -50,9 +50,9 @@
           results.push({ name: IL.rename(files[i].name, IL.EXT[mime] || 'png'), blob });
         }
         if (results.length === 1) out.appendChild(IL.download(results[0].blob, results[0].name));
-        else { const zip = await IL.zip(results); out.appendChild(IL.download(zip, 'imagelab-transformed.zip')); }
+        else { const zip = await IL.zip(results); out.appendChild(IL.download(zip, 'bimba-transformed.zip')); }
         log.set('Done — ' + results.length + ' image' + (results.length > 1 ? 's' : '') + '.', 'ok');
       } catch (e) { log.set('Failed: ' + e.message, 'err'); }
     };
   });
-})(window.ImageLab);
+})(window.Bimba);
