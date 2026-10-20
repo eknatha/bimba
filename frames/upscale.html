@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- Isolated runner for the TensorFlow.js upscaler.
+     TensorFlow.js needs 'unsafe-eval', so it lives in this tiny frame instead of the main page.
+     This page can only load files from this site (connect-src 'self'), has no inline script and no external hosts. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-eval'; connect-src 'self'; img-src 'self' data: blob:; worker-src 'self' blob:">
+<title>upscale runner</title>
+</head>
+<body>
+<script src="../vendor/tfjs/tf.min.js"></script>
+<script src="../vendor/upscaler/upscaler.min.js"></script>
+<script src="../js/frames/upscale-frame.js"></script>
+</body>
+</html>
