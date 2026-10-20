@@ -3,9 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Pages can only talk to this site and the visitor counter. 'wasm-unsafe-eval' is needed by the on-device AI (WebAssembly). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' blob: data: https://api.counterapi.dev; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <title>Bimba — Offline Image Toolkit</title>
-<meta name="description" content="Bimba — offline image toolkit. Convert, compress, resize & more. No uploads, runs entirely in your browser.">
+<meta name="description" content="Bimba — offline image toolkit. Convert, compress, resize, remove backgrounds, OCR, scan documents &amp; more. No uploads, runs entirely in your browser.">
 <link rel="stylesheet" href="css/styles.css">
+<!-- offline proof: must load first so it can observe every request -->
+<script src="js/proof.js"></script>
 </head>
 <body>
 <div class="gradient-bg"></div>
@@ -13,9 +17,9 @@
 
 <header>
   <div class="topbar">
-    <div class="brand"><span class="mk">◧</span>Image<span class="lab">Lab</span></div>
+    <div class="brand"><span class="mk">◧</span><span class="lab">Bimba</span></div>
     <div class="nav-tag">
-      <span class="pill"><b>100%</b> offline</span>
+      <button class="pill" id="proofBtn" type="button" data-i18n-html="nav.offline" data-i18n-attr="title:nav.verify;aria-label:nav.verify"><b>100%</b> offline</button>
       <span class="vchip">
         <span class="vlive"><span class="visitor-dot"></span>Live</span>
         <span class="vtotal loading" id="totalCount">&mdash;</span>
@@ -28,22 +32,22 @@
 <div class="wrap">
   <section class="hero">
     <div class="hl">
-      <span class="badge-pill"><span class="blip"></span> your images never leave this tab</span>
-      <h1>Image tools that <span class="grad">just work</span>, instantly.</h1>
-      <p class="lede"><b>Convert, compress, resize, crop</b> &mdash; every operation runs on your own machine. No uploads, no signup, no waiting. Drag the slider to watch it happen live.</p>
+      <span class="badge-pill"><span class="blip"></span> <span data-i18n="hero.badge">your images never leave this tab</span></span>
+      <h1 data-i18n-html="hero.title">Image tools that <span class="grad">just work</span>, instantly.</h1>
+      <p class="lede" data-i18n-html="hero.lede"><b>Convert, compress, resize, crop</b> &mdash; every operation runs on your own machine. No uploads, no signup, no waiting. Drag the slider to watch it happen live.</p>
       <div class="cta-row">
-        <button class="btn-primary" id="startBtn">Start editing &rarr;</button>
-        <span class="sub"><b>8</b> tools &middot; <b>0</b> uploads</span>
+        <button class="btn-primary" id="startBtn" data-i18n="hero.cta">Start editing &rarr;</button>
+        <span class="sub" data-i18n-html="hero.sub"><b>16</b> tools &middot; <b>0</b> uploads</span>
       </div>
     </div>
     <div class="demo">
       <div class="frame" id="frame">
         <canvas id="demoCv"></canvas>
-        <span class="lbl raw">before</span>
-        <span class="lbl done">after</span>
+        <span class="lbl raw" data-i18n="hero.before">before</span>
+        <span class="lbl done" data-i18n="hero.after">after</span>
         <div class="handle" id="demoHandle"><div class="knob">&#8646;</div></div>
       </div>
-      <div class="cap">&uarr; real-time canvas processing, drag to compare</div>
+      <div class="cap" data-i18n="hero.cap">&uarr; real-time canvas processing, drag to compare</div>
     </div>
   </section>
 
@@ -53,8 +57,9 @@
 
 <footer>
   <div class="wrap">
-    Part of the <b>EknathaLabs</b> ecosystem &middot; offline-first tools &middot; <a href="https://eknathalabs.com">eknathalabs.com</a>
-    <div class="sib">sibling project &mdash; <a href="https://patram.eknathalabs.com">Patram</a>, the PDF toolkit</div>
+    <div data-i18n-html="footer.part">Part of the <b>EknathaLabs</b> ecosystem &middot; offline-first tools &middot; <a href="https://eknathalabs.com">eknathalabs.com</a></div>
+    <div class="sib" data-i18n-html="footer.sib">sibling project &mdash; <a href="https://patram.eknathalabs.com">Patram</a>, the PDF toolkit</div>
+    <div class="sib flinks"><a href="#" id="ethLink" data-i18n="footer.ethics">Responsible use</a> &middot; <a href="#" id="proofLink" data-i18n="footer.proof">Offline proof</a></div>
   </div>
 </footer>
 
@@ -74,10 +79,27 @@
 
 <!-- core -->
 <script src="js/helpers.js"></script>
+<script src="js/i18n.js"></script>
+
+<!-- language packs (English is the master; missing keys fall back to it) -->
+<script src="js/lang/en.js"></script>
+<script src="js/lang/hi.js"></script>
+<script src="js/lang/te.js"></script>
+<script src="js/lang/ta.js"></script>
+<script src="js/lang/kn.js"></script>
+<script src="js/lang/ml.js"></script>
+<script src="js/lang/mr.js"></script>
+<script src="js/lang/bn.js"></script>
+<script src="js/lang/or.js"></script>
+<script src="js/lang/es.js"></script>
+<script src="js/lang/ru.js"></script>
+<script src="js/lang/pa.js"></script>
+
 <script src="js/registry.js"></script>
 <script src="js/sample.js"></script>
+<script src="js/ethics.js"></script>
 
-<!-- tools (each self-registers into ImageLab.tools) -->
+<!-- tools (each self-registers into Bimba.tools; heavy models/libs load only when a tool is used) -->
 <script src="js/tools/convert.js"></script>
 <script src="js/tools/compress.js"></script>
 <script src="js/tools/resize.js"></script>
@@ -86,6 +108,14 @@
 <script src="js/tools/exif.js"></script>
 <script src="js/tools/favicon.js"></script>
 <script src="js/tools/watermark.js"></script>
+<script src="js/tools/targetsize.js"></script>
+<script src="js/tools/pixeldiff.js"></script>
+<script src="js/tools/docscan.js"></script>
+<script src="js/tools/imgpdf.js"></script>
+<script src="js/tools/restore.js"></script>
+<script src="js/tools/bgremove.js"></script>
+<script src="js/tools/upscale.js"></script>
+<script src="js/tools/ocr.js"></script>
 
 <!-- app boot + hero demo -->
 <script src="js/app.js"></script>
